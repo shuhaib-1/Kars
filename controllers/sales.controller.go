@@ -11,8 +11,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jung-kurt/gofpdf/v2"
-	"github.com/wcharczuk/go-chart/v2/drawing"
 	"github.com/wcharczuk/go-chart/v2"
+	"github.com/wcharczuk/go-chart/v2/drawing"
 	"gorm.io/gorm"
 )
 
@@ -162,7 +162,7 @@ func GetSalesReport(c *fiber.Ctx) error {
 
 func generatePDFReport(orderCount OrderCount, amountInfo AmountInformation, totalSales float64, startDate, endDate string, chartPath string, barChartPath string) (gofpdf.Pdf, error) {
 	pdf := gofpdf.New("P", "mm", "", "")
-	pdf.AddPageFormat("P", gofpdf.SizeType{Wd: 210, Ht: 450}) // Standard A4 size
+	pdf.AddPageFormat("P", gofpdf.SizeType{Wd: 210, Ht: 490}) // Standard A4 size
 
 	// Title
 	pdf.SetFont("Arial", "B", 16)
@@ -256,12 +256,19 @@ func generatePDFReport(orderCount OrderCount, amountInfo AmountInformation, tota
 
 	if barChartPath != "" {
 		if _, err := os.Stat(barChartPath); err == nil {
-			pdf.Image(barChartPath, 55, pdf.GetY(), 100, 0, false, "", 0, "")
-			pdf.Ln(110)
+			// Embed the bar chart image dynamically
+			pdf.ImageOptions(barChartPath, 55, pdf.GetY(), 140, 0, false, gofpdf.ImageOptions{ImageType: "PNG"}, 0, "")
+			pdf.Ln(120) // Adjust line spacing based on chart height
 		} else {
-			pdf.CellFormat(0, 10, "Bar chart file not found", "", 1, "C", false, 0, "")
+			// File not found
+			pdf.SetFont("Arial", "B", 12)
+			pdf.SetTextColor(255, 0, 0) // Red color for error message
+			pdf.CellFormat(0, 10, "Error: Bar chart file not found", "", 1, "C", false, 0, "")
+			pdf.SetTextColor(0, 0, 0) // Reset text color to black
 		}
 	} else {
+		// No bar chart provided
+		pdf.SetFont("Arial", "I", 12)
 		pdf.CellFormat(0, 10, "Bar chart not available", "", 1, "C", false, 0, "")
 	}
 
@@ -333,62 +340,70 @@ func generateBarChartReport(amountInfo AmountInformation) string {
 		{Label: fmt.Sprintf("After\nDeduction\n₹%.2f", amountInfo.TotalAmountAfterDeduction), Value: amountInfo.TotalAmountAfterDeduction, Style: chart.Style{FillColor: drawing.ColorFromHex("F39C12")}},
 	}
 
+	maxValue := 0.0
+	for _, bar := range values {
+		if bar.Value > maxValue {
+			maxValue = bar.Value
+		}
+	}
+
+	// Set a buffer above the maximum value for better chart visualization
+	buffer := maxValue * 0.1
+	yMax := maxValue + buffer
+
+	// Generate ticks dynamically
+	ticks := []chart.Tick{}
+	tickInterval := 1500.0 // Set interval for Y-axis ticks (e.g., ₹5,000)
+	for i := 0.0; i <= yMax; i += tickInterval {
+		ticks = append(ticks, chart.Tick{
+			Value: i,
+			Label: fmt.Sprintf("₹%.0f", i),
+		})
+	}
+
 	barChart := chart.BarChart{
 		Title: "Amount Breakdown",
 		Background: chart.Style{
 			Padding: chart.Box{
-				Top:    50,
-				Left:   50,
-				Right:  50,
+				Top:    20,
+				Left:   20,
+				Right:  20,
 				Bottom: 50,
 			},
 			FillColor: drawing.ColorWhite,
 		},
 		TitleStyle: chart.Style{
-			FontSize:  44,
+			FontSize:  16,
 			FontColor: drawing.ColorBlack,
 		},
-		Width:    2400, // Increased width for better label display
-		Height:   1800, // Increased height for better spacing
-		BarWidth: 250,  // Increased bar width for better clarity
+		Width:    800,
+		Height:   600,
+		BarWidth: 60,
 		Bars:     values,
 		YAxis: chart.YAxis{
 			Style: chart.Style{
-				FontSize:  44,
+				FontSize:  12,
 				FontColor: drawing.ColorBlack,
 			},
 			ValueFormatter: func(v interface{}) string {
 				return fmt.Sprintf("₹%.2f", v.(float64))
 			},
-			Ticks: []chart.Tick{
-				{Value: 1000, Label: "₹1,000"},
-				{Value: 3000, Label: "₹3,000"},
-				{Value: 6000, Label: "₹6,000"},
-				{Value: 9000, Label: "₹9,000"},
-				{Value: 12000, Label: "₹12,000"},
-				{Value: 15000, Label: "₹15,000"},
-				{Value: 18000, Label: "₹18,000"},
-				{Value: 21000, Label: "₹21,000"},
-				{Value: 24000, Label: "₹24,000"},
-				{Value: 27000, Label: "₹27,000"},
-				{Value: 30000, Label: "₹30,000"},
-				{Value: 33000, Label: "₹33,000"},
-				{Value: 36000, Label: "₹36,000"},
-				{Value: 39000, Label: "₹39,000"},
-			},
+			Ticks: ticks,
 			Range: &chart.ContinuousRange{
 				Min: 0,
 				Max: amountInfo.TotalAmountBeforeDeduction * 1.1,
 			},
 		},
 		XAxis: chart.Style{
-			FontSize:  36, // Increased font size for better readability
+			FontSize:  12, // Increased font size for better readability
 			FontColor: drawing.ColorBlack,
 		},
 		Canvas: chart.Style{
 			FillColor: drawing.ColorWhite,
 		},
+		
 	}
+
 
 	outputPath := "bar_chart.png"
 
@@ -410,7 +425,6 @@ func generateBarChartReport(amountInfo AmountInformation) string {
 
 	return outputPath
 }
-
 
 func InvoiceDownload(c *fiber.Ctx) error {
 	orderID := c.Query("order_id")

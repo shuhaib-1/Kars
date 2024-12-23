@@ -9,7 +9,7 @@ import (
 
 func AddToCart(c *fiber.Ctx) error{
 	 
-	userid := c.Params("user_id")
+	userid := c.Locals("user_id")
 	if userid == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "user id is required",
@@ -125,6 +125,12 @@ func AddToCart(c *fiber.Ctx) error{
 		}
 		cart.TotalItems++
 	} else{
+
+		if cartitem.Quantity >= 5{
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "you can only add up to 5 quantities of a single product",
+			})
+		}
 
 		if cartitem.Quantity >= product.Quantity {
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

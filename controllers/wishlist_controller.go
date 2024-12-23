@@ -3,25 +3,23 @@ package controllers
 import (
 	"kars/database"
 	"kars/models"
-	"log"
-
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 func AddWishList(c *fiber.Ctx) error {
 
-	userID, err := convertToUint(c.Locals("user_id"))
-	if err != nil {
+	userID := c.Locals("user_id")
+	if userID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
+			"error": "user id is required",
 		})
 	}
 
-	productID, err := convertToUint(c.Params("product_id"))
-	if err != nil {
+	productID := c.Params("product_id")
+	if productID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": err.Error(),
+			"error": "product is required",
 		})
 	}
 
@@ -57,15 +55,14 @@ func AddWishList(c *fiber.Ctx) error {
 	}
 
 	wishList = models.Wishlist{
-		UserID:             userID,
-		ProductID:          productID,
+		UserID:             user.ID,
+		ProductID:          product.ID,
 		ProductName:        product.ProductName,
 		ProductDescription: product.Description,
 		ProductPrice:       product.Price,
 	}
 
 	if err := database.DB.Create(&wishList).Error; err != nil {
-		log.Print(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "failed to add the product to the wishlist",
 		})
@@ -75,6 +72,7 @@ func AddWishList(c *fiber.Ctx) error {
 		"message": "product successfully added to the wishlist",
 	})
 }
+
 func RemoveFromWishList(c *fiber.Ctx) error {
 
 	userID := c.Locals("user_id")
@@ -141,7 +139,6 @@ func ListWishList(c *fiber.Ctx) error {
 				"error": "not found any products",
 			})
 		}
-		log.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "failed to retrieve wishlist",
 		})
@@ -155,6 +152,12 @@ func ListWishList(c *fiber.Ctx) error {
 			"product_decription": item.ProductDescription,
 			"product_name":       item.ProductName,
 			"product_price":      item.ProductPrice,
+		})
+	}
+
+	if len(response) == 0{
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "no wishlist items found",
 		})
 	}
 

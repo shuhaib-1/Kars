@@ -46,10 +46,10 @@ func Routes(app *fiber.App) {
 	app.Post("/api/user/address", middleware.CheckUserStatus, controllers.UserAddAddress)
 	app.Patch("/api/user/address/:address_id", middleware.CheckUserStatus, controllers.UserEditAddress)
 	app.Delete("/api/user/address/:address_id", middleware.CheckUserStatus, controllers.UserDeleteAddress)
-	app.Get("/api/user/address/:user_id", controllers.UserListAddress)
+	app.Get("/api/user/address", middleware.CheckUserStatus,controllers.UserListAddress)
 
 	//Cart Routes
-	app.Post("api/user/cart/:user_id/:product_id", middleware.CheckUserStatus, controllers.AddToCart)
+	app.Post("api/user/cart/:product_id", middleware.CheckUserStatus, controllers.AddToCart)
 	app.Delete("/api/user/cart/:product_id", middleware.CheckUserStatus, controllers.RemoveFromCart)
 	app.Get("/api/user/cart", middleware.CheckUserStatus, controllers.ListCartProducts)
 

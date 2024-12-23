@@ -315,6 +315,7 @@ func UserProductList(c *fiber.Ctx) error {
 		}
 
 		productMap := fiber.Map{
+			"product_id": product.ID,
 			"product_name":  product.ProductName,
 			"description":   product.Description,
 			"price":         product.Price,
@@ -322,6 +323,7 @@ func UserProductList(c *fiber.Ctx) error {
 			"quantity":      product.Quantity,
 			"color":         product.Color,
 			"status":        product.Status,
+			"category_id": product.Category.ID,
 			"category_name": product.Category.CategoryName,
 			"img_urls":      product.ImgURLs,
 		}
