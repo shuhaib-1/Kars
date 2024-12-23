@@ -3,7 +3,6 @@ package controllers
 import (
 	"kars/database"
 	"kars/models"
-	"strconv"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -24,20 +23,6 @@ func AddToCart(c *fiber.Ctx) error{
 		})
 	}
 
-	uid, err := strconv.ParseUint(userid, 10,32)
-	if err != nil{
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid user id format",
-		})
-	}
-	
-	pid, err := strconv.ParseUint(productid, 10,32)
-	if err != nil{
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "invalid product id format",
-		})
-	}
-
 	var user models.User
 	if err := database.DB.First(&user, "id = ?", userid).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
@@ -52,7 +37,7 @@ func AddToCart(c *fiber.Ctx) error{
 
 
 	var product models.Product
-	if err := database.DB.Where("id = ?", pid).First(&product).Error; err != nil{
+	if err := database.DB.Where("id = ?", productid).First(&product).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "product not found",
@@ -103,10 +88,10 @@ func AddToCart(c *fiber.Ctx) error{
 	}
 
 	var cart models.Cart
-    if err = database.DB.Where("user_id = ?", uid).First(&cart).Error; err != nil {
+    if err := database.DB.Where("user_id = ?", userid).First(&cart).Error; err != nil {
         if err == gorm.ErrRecordNotFound {
             cart = models.Cart{
-                UserID:    uint(uid),
+                UserID:    user.ID,
                 TotalItems: 0,
             }
             if err := database.DB.Create(&cart).Error; err != nil {
@@ -123,11 +108,11 @@ func AddToCart(c *fiber.Ctx) error{
 
 	var cartitem models.CartItem
 
-	if err := database.DB.Where("cart_id = ? AND product_id = ?",cart.ID, pid).First(&cartitem).Error; err != nil{
+	if err := database.DB.Where("cart_id = ? AND product_id = ?",cart.ID, productid).First(&cartitem).Error; err != nil{
 		
 		cartitem = models.CartItem{
 			CartID: cart.ID,
-			ProductID: uint(pid),
+			ProductID: product.ID,
 			ProductName: product.ProductName,
 			ProductPrice: productPrice,
 			Quantity: 1,

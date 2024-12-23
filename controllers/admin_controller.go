@@ -132,7 +132,6 @@ func AdminLogin(c *fiber.Ctx) error {
 		"message": "admin login successfully",
 		"token":   token,
 	})
-
 }
 
 func UserList(c *fiber.Ctx) error {
@@ -150,6 +149,7 @@ func UserList(c *fiber.Ctx) error {
 		"Users":   Users,
 	})
 }
+
 func BlockUser(c *fiber.Ctx) error {
 	UserId := c.Params("user_id")
 	if UserId == "" {

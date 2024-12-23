@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"kars/database"
 	"kars/models"
-	"log"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -68,15 +67,16 @@ func AddCategory(c *fiber.Ctx) error {
 
 
 	var existingCategory models.Category
-	result := database.DB.Where("LOWER(category_name) = LOWER(?)", input.Name).First(&existingCategory)
-	if result.Error == nil {
-		return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-			"error": "Category already exists",
+	err := database.DB.First(&existingCategory, "LOWER(category_name) = LOWER(?)", input.Name).Error
+	if err == nil{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "category already exists",
 		})
-	} else if result.Error != nil && !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		log.Println("Database error:", result.Error)
+	}
+
+	if !errors.Is(err, gorm.ErrRecordNotFound){
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Database error while checking for existing category",
+			"error": "failed to check existing product",
 		})
 	}
 

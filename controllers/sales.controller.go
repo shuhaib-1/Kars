@@ -11,6 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jung-kurt/gofpdf/v2"
+	"github.com/wcharczuk/go-chart/v2/drawing"
 	"github.com/wcharczuk/go-chart/v2"
 	"gorm.io/gorm"
 )
@@ -319,7 +320,6 @@ func generateChartReport(orderCount OrderCount) string {
 }
 
 func generateBarChartReport(amountInfo AmountInformation) string {
-
 	fmt.Println("Debug Values:")
 	fmt.Printf("Total Before Deduction: %.2f\n", amountInfo.TotalAmountBeforeDeduction)
 	fmt.Printf("Coupon Deduction: %.2f\n", amountInfo.TotalCouponDeduction)
@@ -327,32 +327,66 @@ func generateBarChartReport(amountInfo AmountInformation) string {
 	fmt.Printf("After Deduction: %.2f\n", amountInfo.TotalAmountAfterDeduction)
 
 	values := []chart.Value{
-		{Label: "Total Before Deduction", Value: amountInfo.TotalAmountBeforeDeduction, Style: chart.Style{FillColor: chart.ColorBlue}},
-		{Label: "Coupon Deduction", Value: amountInfo.TotalCouponDeduction, Style: chart.Style{FillColor: chart.ColorRed}},
-		{Label: "Delivery Charges", Value: amountInfo.TotalDeliveryCharges, Style: chart.Style{FillColor: chart.ColorGreen}},
-		{Label: "After Deduction", Value: amountInfo.TotalAmountAfterDeduction, Style: chart.Style{FillColor: chart.ColorOrange}},
+		{Label: fmt.Sprintf("Total Before\nDeduction\n₹%.2f", amountInfo.TotalAmountBeforeDeduction), Value: amountInfo.TotalAmountBeforeDeduction, Style: chart.Style{FillColor: drawing.ColorFromHex("2E86C1")}},
+		{Label: fmt.Sprintf("Coupon\nDeduction\n₹%.2f", amountInfo.TotalCouponDeduction), Value: amountInfo.TotalCouponDeduction, Style: chart.Style{FillColor: drawing.ColorFromHex("E74C3C")}},
+		{Label: fmt.Sprintf("Delivery\nCharges\n₹%.2f", amountInfo.TotalDeliveryCharges), Value: amountInfo.TotalDeliveryCharges, Style: chart.Style{FillColor: drawing.ColorFromHex("27AE60")}},
+		{Label: fmt.Sprintf("After\nDeduction\n₹%.2f", amountInfo.TotalAmountAfterDeduction), Value: amountInfo.TotalAmountAfterDeduction, Style: chart.Style{FillColor: drawing.ColorFromHex("F39C12")}},
 	}
 
 	barChart := chart.BarChart{
 		Title: "Amount Breakdown",
-		TitleStyle: chart.Style{
-			FontSize: 44,
+		Background: chart.Style{
+			Padding: chart.Box{
+				Top:    50,
+				Left:   50,
+				Right:  50,
+				Bottom: 50,
+			},
+			FillColor: drawing.ColorWhite,
 		},
-		Width:    1900,
-		Height:   1500,
+		TitleStyle: chart.Style{
+			FontSize:  44,
+			FontColor: drawing.ColorBlack,
+		},
+		Width:    2400, // Increased width for better label display
+		Height:   1800, // Increased height for better spacing
+		BarWidth: 250,  // Increased bar width for better clarity
 		Bars:     values,
-		BarWidth: 300,
 		YAxis: chart.YAxis{
 			Style: chart.Style{
-				FontSize: 44,
+				FontSize:  44,
+				FontColor: drawing.ColorBlack,
+			},
+			ValueFormatter: func(v interface{}) string {
+				return fmt.Sprintf("₹%.2f", v.(float64))
+			},
+			Ticks: []chart.Tick{
+				{Value: 1000, Label: "₹1,000"},
+				{Value: 3000, Label: "₹3,000"},
+				{Value: 6000, Label: "₹6,000"},
+				{Value: 9000, Label: "₹9,000"},
+				{Value: 12000, Label: "₹12,000"},
+				{Value: 15000, Label: "₹15,000"},
+				{Value: 18000, Label: "₹18,000"},
+				{Value: 21000, Label: "₹21,000"},
+				{Value: 24000, Label: "₹24,000"},
+				{Value: 27000, Label: "₹27,000"},
+				{Value: 30000, Label: "₹30,000"},
+				{Value: 33000, Label: "₹33,000"},
+				{Value: 36000, Label: "₹36,000"},
+				{Value: 39000, Label: "₹39,000"},
 			},
 			Range: &chart.ContinuousRange{
 				Min: 0,
-				Max: amountInfo.TotalAmountBeforeDeduction * 1,
+				Max: amountInfo.TotalAmountBeforeDeduction * 1.1,
 			},
 		},
 		XAxis: chart.Style{
-			FontSize: 36,
+			FontSize:  36, // Increased font size for better readability
+			FontColor: drawing.ColorBlack,
+		},
+		Canvas: chart.Style{
+			FillColor: drawing.ColorWhite,
 		},
 	}
 
@@ -376,6 +410,7 @@ func generateBarChartReport(amountInfo AmountInformation) string {
 
 	return outputPath
 }
+
 
 func InvoiceDownload(c *fiber.Ctx) error {
 	orderID := c.Query("order_id")
@@ -435,10 +470,10 @@ func InvoiceDownload(c *fiber.Ctx) error {
 
 	pdf.SetFont("Arial", "B", 12)
 
-	pdf.CellFormat(20, 10, "Item ID", "1", 0, "C", false, 0, "")  
+	pdf.CellFormat(20, 10, "Item ID", "1", 0, "C", false, 0, "")
 	pdf.CellFormat(50, 10, "Item Name", "1", 0, "C", false, 0, "")
-	pdf.CellFormat(20, 10, "Quantity", "1", 0, "C", false, 0, "") 
-	pdf.CellFormat(30, 10, "Price", "1", 0, "C", false, 0, "") 
+	pdf.CellFormat(20, 10, "Quantity", "1", 0, "C", false, 0, "")
+	pdf.CellFormat(30, 10, "Price", "1", 0, "C", false, 0, "")
 	pdf.CellFormat(30, 10, "Total", "1", 1, "C", false, 0, "")
 
 	pdf.SetFont("Arial", "", 12)
@@ -447,11 +482,11 @@ func InvoiceDownload(c *fiber.Ctx) error {
 			continue
 		}
 
-		pdf.CellFormat(20, 10, fmt.Sprintf("%d", item.ProductID), "1", 0, "C", false, 0, "")                             
-		pdf.CellFormat(50, 10, item.ProductName, "1", 0, "L", false, 0, "")                                          
-		pdf.CellFormat(20, 10, fmt.Sprintf("%d", item.Quantity), "1", 0, "C", false, 0, "")                              
-		pdf.CellFormat(30, 10, fmt.Sprintf("$%.2f", item.ProductPrice), "1", 0, "R", false, 0, "")                  
-		pdf.CellFormat(30, 10, fmt.Sprintf("$%.2f", float64(item.Quantity)*item.ProductPrice), "1", 1, "R", false, 0, "") 
+		pdf.CellFormat(20, 10, fmt.Sprintf("%d", item.ProductID), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(50, 10, item.ProductName, "1", 0, "L", false, 0, "")
+		pdf.CellFormat(20, 10, fmt.Sprintf("%d", item.Quantity), "1", 0, "C", false, 0, "")
+		pdf.CellFormat(30, 10, fmt.Sprintf("$%.2f", item.ProductPrice), "1", 0, "R", false, 0, "")
+		pdf.CellFormat(30, 10, fmt.Sprintf("$%.2f", float64(item.Quantity)*item.ProductPrice), "1", 1, "R", false, 0, "")
 	}
 	pdf.SetFont("Arial", "B", 12)
 	pdf.Ln(8)

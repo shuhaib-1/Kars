@@ -112,6 +112,7 @@ func PlaceOrder(c *fiber.Ctx) error {
 	if coupon.DiscountType == "fixed" {
 		discountAmount = coupon.DiscountValue
 	}
+	
 	if coupon.DiscountType == "percentage" {
 		discountAmount = totalPrice * coupon.DiscountValue / 100
 	}

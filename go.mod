@@ -41,6 +41,7 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0 // indirect
 	github.com/valyala/tcplisten v1.0.0 // indirect
+	github.com/wcharczuk/go-chart v2.0.1+incompatible // indirect
 	github.com/wcharczuk/go-chart/v2 v2.1.2 // indirect
 	github.com/xuri/efp v0.0.0-20240408161823-9ad904a10d6d // indirect
 	github.com/xuri/excelize/v2 v2.9.0 // indirect

@@ -50,8 +50,6 @@ func UserAddAddress(c *fiber.Ctx) error {
 		})
 	}
 
-	fmt.Println(Address)
-
 	Address.UserID = UserId
 
 	if err := Address.AddressValidate(); err != nil {
@@ -186,8 +184,6 @@ func UserDeleteAddress(c *fiber.Ctx) error {
 			"error":"address id is required",
 		})
 	}
-
-	fmt.Println(addressid, UserId)
 
 	var address models.Address
 	if err := database.DB.Where("id = ? AND user_id = ?", addressid,UserId).First(&address).Error; err != nil{
