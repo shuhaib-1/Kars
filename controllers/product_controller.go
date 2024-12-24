@@ -4,7 +4,6 @@ import (
 	"kars/database"
 	"kars/models"
 	"log"
-
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

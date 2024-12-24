@@ -23,14 +23,14 @@ type NewAddress struct {
 
 func UserAddAddress(c *fiber.Ctx) error {
 
-	UserId := c.Locals("user_id")
-	if UserId == "" {
+	userID := c.Locals("user_id")
+	if userID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "user id is required",
 		})
 	}
-	var ExistingUser models.User
-	if err := database.DB.Where("id = ?", UserId).First(&ExistingUser).Error; err != nil {
+	var existingUser models.User
+	if err := database.DB.Where("id = ?", userID).First(&existingUser).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "user not found",
@@ -48,7 +48,7 @@ func UserAddAddress(c *fiber.Ctx) error {
 		})
 	}
 
-	Address.UserID = ExistingUser.ID
+	Address.UserID = existingUser.ID
 
 	if err := Address.AddressValidate(); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

@@ -9,22 +9,22 @@ import (
 
 func AddToCart(c *fiber.Ctx) error{
 	 
-	userid := c.Locals("user_id")
-	if userid == ""{
+	userID := c.Locals("user_id")
+	if userID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "user id is required",
 		})
 	}
 
-	productid := c.Params("product_id")
-	if productid == ""{
+	productID := c.Params("product_id")
+	if productID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "product id is required",
 		})
 	}
 
 	var user models.User
-	if err := database.DB.First(&user, "id = ?", userid).Error; err != nil{
+	if err := database.DB.First(&user, "id = ?", userID).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "User not found",
@@ -37,7 +37,7 @@ func AddToCart(c *fiber.Ctx) error{
 
 
 	var product models.Product
-	if err := database.DB.Where("id = ?", productid).First(&product).Error; err != nil{
+	if err := database.DB.Where("id = ?", productID).First(&product).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "product not found",
@@ -88,7 +88,7 @@ func AddToCart(c *fiber.Ctx) error{
 	}
 
 	var cart models.Cart
-    if err := database.DB.Where("user_id = ?", userid).First(&cart).Error; err != nil {
+    if err := database.DB.Where("user_id = ?", userID).First(&cart).Error; err != nil {
         if err == gorm.ErrRecordNotFound {
             cart = models.Cart{
                 UserID:    user.ID,
@@ -108,7 +108,7 @@ func AddToCart(c *fiber.Ctx) error{
 
 	var cartitem models.CartItem
 
-	if err := database.DB.Where("cart_id = ? AND product_id = ?",cart.ID, productid).First(&cartitem).Error; err != nil{
+	if err := database.DB.Where("cart_id = ? AND product_id = ?",cart.ID, productID).First(&cartitem).Error; err != nil{
 		
 		cartitem = models.CartItem{
 			CartID: cart.ID,
@@ -160,24 +160,25 @@ func AddToCart(c *fiber.Ctx) error{
 	})
 
 }
+
 func RemoveFromCart(c *fiber.Ctx) error {
 	
-	userid := c.Locals("user_id")
-	if userid == ""{
+	userID := c.Locals("user_id")
+	if userID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "user id is required",
 		})
 	}
 
-	productid := c.Params("product_id")
-	if userid == ""{
+	productID := c.Params("product_id")
+	if productID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "product id is required",
 		})
 	}
 
 	var cart models.Cart
-	if err := database.DB.Where("user_id", userid).First(&cart).Error; err != nil{
+	if err := database.DB.Where("user_id", userID).First(&cart).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "failed to find the user in the cart",
@@ -189,7 +190,7 @@ func RemoveFromCart(c *fiber.Ctx) error {
 	}
 
 	var cartitem models.CartItem
-	if err := database.DB.Where("cart_id = ? AND product_id = ?", cart.ID, productid).First(&cartitem).Error; err != nil{
+	if err := database.DB.Where("cart_id = ? AND product_id = ?", cart.ID, productID).First(&cartitem).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "product not found in the cart",
@@ -222,15 +223,15 @@ func RemoveFromCart(c *fiber.Ctx) error {
 
 func ListCartProducts(c *fiber.Ctx) error {
 
-	userid := c.Locals("user_id")
-	if userid == ""{
+	userID := c.Locals("user_id")
+	if userID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "user id is required",
 		})
 	}
 
 	var cart models.Cart
-	if err := database.DB.First(&cart,"user_id", userid).Error; err != nil{
+	if err := database.DB.First(&cart,"user_id", userID).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "cart not found",

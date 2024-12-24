@@ -241,6 +241,13 @@ func DeleteCoupon(c *fiber.Ctx) error {
 
 func CancelCoupon(c *fiber.Ctx) error {
 
+	userID := c.Locals("user_id")
+	if userID == ""{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "user id is required",
+		})
+	}
+
 	orderID := c.Params("order_id")
 	if orderID == ""{
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -249,7 +256,7 @@ func CancelCoupon(c *fiber.Ctx) error {
 	}
 
 	var order models.Order
-	if err := database.DB.First(&order, "id = ?", orderID).Error; err != nil{
+	if err := database.DB.First(&order, "id = ? AND user_id = ?", orderID, userID).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "order not found",
@@ -257,6 +264,18 @@ func CancelCoupon(c *fiber.Ctx) error {
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "failed to retrieve order",
+		})
+	}
+
+	if order.CouponCode == ""{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "did't apply any coupon",
+		})
+	}
+
+	if order.PaymentStatus == "paid"{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "payment already paid; you can't cancel the coupon",
 		})
 	}
 

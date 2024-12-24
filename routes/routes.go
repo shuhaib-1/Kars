@@ -69,7 +69,7 @@ func Routes(app *fiber.App) {
 	app.Post("/api/admin/coupon",  controllers.AddCoupon)
 	app.Patch("/api/admin/coupon/:coupon_id", middleware.AdminMiddleware, controllers.EditCoupon)
 	app.Delete("/api/admin/coupon/:coupon_id", middleware.AdminMiddleware, controllers.DeleteCoupon)
-	app.Post("/api/user/coupon/:order_id", middleware.AdminMiddleware, controllers.CancelCoupon)
+	app.Post("/api/user/coupon/:order_id", middleware.CheckUserStatus, controllers.CancelCoupon)
 
 	//Payment Routes
 	app.Get("/api/user/render-razorpay", controllers.RenderRayzorPay)
