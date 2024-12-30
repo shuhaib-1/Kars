@@ -31,7 +31,7 @@ func GetGoogleOAuthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     clientID,
 		ClientSecret: clientSecret,
-		RedirectURL:  "/api/user/google_signup/callback",
+		RedirectURL:  "https://kars.in.net/api/user/google_signup/callback",
 		Scopes:       []string{"https://www.googleapis.com/auth/userinfo.email", "https://www.googleapis.com/auth/userinfo.profile"},
 		Endpoint:     google.Endpoint,
 	}
