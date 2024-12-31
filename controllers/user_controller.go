@@ -139,6 +139,7 @@ func VerifyOtpAndCreateUser(c *fiber.Ctx) error {
 	}
 
 	storedData, err := redisClient.HGetAll(ctx, email).Result()
+	fmt.Print(storedData)
 	if err != nil || storedData["otp"] != input.VerifyOTP {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 			"error": "Invalid or expired OTP",

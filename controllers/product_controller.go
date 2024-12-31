@@ -242,15 +242,14 @@ func DeleteProduct(c *fiber.Ctx) error {
 	}
 
 	var product models.Product
-	result := database.DB.First(&product, id)
-	if result.Error != nil {
-		if result.Error == gorm.ErrRecordNotFound {
+	if err := database.DB.Preload("Categories").First(&product, "id = ?", id).Error; err != nil{
+		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "Product not found",
+				"error": "product not found",
 			})
 		}
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to retrieve product",
+			"error": "failed retrieve product",
 		})
 	}
 
