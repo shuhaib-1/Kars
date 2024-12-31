@@ -242,7 +242,7 @@ func DeleteProduct(c *fiber.Ctx) error {
 	}
 
 	var product models.Product
-	if err := database.DB.Preload("Categories").First(&product, "id = ?", id).Error; err != nil{
+	if err := database.DB.First(&product, "id = ?", id).Error; err != nil{
 		if err == gorm.ErrRecordNotFound{
 			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 				"error": "product not found",
@@ -259,16 +259,24 @@ func DeleteProduct(c *fiber.Ctx) error {
 		product.IsListed = "listed"
 	}
 
-	saveResult := database.DB.Save(&product)
-	if saveResult.Error != nil {
+	if err := database.DB.Save(&product).Error; err != nil{
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to save product",
+			"error": "failed to save product",
 		})
+	}
+
+	response := fiber.Map{
+		"product_id": product.ID,
+		"product_name": product.ProductName,
+		"discription": product.Description,
+		"created_at": product.CreatedAt,
+		"updated_at": product.UpdatedAt,
+		"is_listed": product.IsListed,
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":         "Product successfully updated",
-		"product_details": product,
+		"product_details": response,
 	})
 }
 
