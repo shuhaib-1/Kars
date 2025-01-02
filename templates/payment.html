@@ -71,7 +71,7 @@
             let orderID = "{{ .order_id }}"; 
             console.log("Order ID:", orderID);
     
-            fetch(`http://kars.in.net/api/user/create-order/${orderID}`, { method: 'POST' })
+            fetch(`https://kars.in.net/api/user/create-order/${orderID}`, { method: 'POST' })
             .then(response => response.json())
             .then(data => {
                 console.log("Order created:", data);
@@ -87,7 +87,7 @@
                     "handler": function (response) {
                         console.log("Payment succeeded:", response);
                         paymentFailureHandled = false;
-                        fetch(`http://kars.in.net/api/user/verify-payment/${orderID}`, {
+                        fetch(`https://kars.in.net/api/user/verify-payment/${orderID}`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json'
