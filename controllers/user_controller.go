@@ -39,7 +39,9 @@ type UserInput struct {
 }
 
 var redisClient = redis.NewClient(&redis.Options{
-	Addr: "localhost:6379",
+	Addr:     "redis:6379", // Ensure this is correct (default Redis port)
+	Password: "",               // Make sure it's empty if no password is set
+	DB:       0,
 })
 
 func UserSignUp(c *fiber.Ctx) error {
@@ -114,7 +116,7 @@ func UserSignUp(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "OTP sent successfully",
-		"otp": otp.Code,
+		"otp":     otp.Code,
 	})
 }
 

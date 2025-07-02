@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kars-app
+  template:
+    metadata:
+      labels:
+        app: kars-app
+    spec:
+      containers:
+      - name: app-name
+        image: kars-app:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "postgres"
+        - name: DB_PASS
+          value: "password"
+        - name: DB_NAME
+          value: "kars"

@@ -19,7 +19,7 @@ type OTP struct {
 	ExpiredAt time.Time
 }
 
-func InitFunc() {
+func Init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("Error loading .env file")
@@ -57,12 +57,12 @@ func GenerateOTP(email string, length int) (OTP, error) {
 
 func SendOtp(email, otp string) error {
 	apiKey := os.Getenv("SENDGRID_API_KEY")
-	log.Println(apiKey)
+	log.Println(apiKey, len(apiKey))
 	if apiKey == "" {
 		return fmt.Errorf("SENDGRID_API_KEY environment variable not set")
 	}
 
-	from := mail.NewEmail("Kars", "shuhaibpa85@gmail.com")
+	from := mail.NewEmail("Kars", "messagesender64527@gmail.com")
 	subject := "Your OTP Code"
 	to := mail.NewEmail("User", email)
 	plainTextContent := fmt.Sprintf("Your OTP code is: %s", otp)

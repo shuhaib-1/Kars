@@ -3,6 +3,9 @@ package database
 import (
 	"fmt"
 	"log"
+	"os"
+	"time"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	// "your_project/models"
@@ -10,16 +13,23 @@ import (
 
 var DB *gorm.DB
 
+func ConnectDB() {
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASS"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
 
-func ConnectDB(){
-	dsn := "host=localhost user=postgres password=password dbname=kars port=5432 sslmode=disable TimeZone=Asia/Shanghai"
-    db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-    if err != nil {
-        log.Fatal("Failed to connect to the database:", err)
-    }
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	time.Sleep(2 * time.Second)
+	if err != nil {
+		log.Fatal("Failed to connect to the database:", err)
+	}
 
 	DB = db
-	
+
 	// Ping the database to check the connection
 	sqlDB, err := DB.DB()
 	if err != nil {
