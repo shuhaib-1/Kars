@@ -4,6 +4,7 @@ import (
 	"kars/database"
 	"kars/models"
 	"log"
+	"strconv"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -282,11 +283,20 @@ func DeleteProduct(c *fiber.Ctx) error {
 
 func UserProductList(c *fiber.Ctx) error {
 
+	pageParam := c.Params("page")
+	page, err := strconv.Atoi(pageParam)
+	if err != nil || page < 0 {
+		page = 1
+	}
+
+	limit := 10
+	offSet := (page - 1) * limit
+
 	var productlist []models.Product
 
 	if err := database.DB.Preload("Category", func(db *gorm.DB) *gorm.DB {
 		return db.Where("is_listed = ?", "listed")
-	}).Where("is_listed = ?", "listed").Find(&productlist).Error; err != nil {
+	}).Where("is_listed = ?", "listed").Limit(limit).Offset(offSet).Find(&productlist).Error; err != nil {
 		c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to fetch products details",
 		})
@@ -338,6 +348,7 @@ func UserProductList(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message":         "successfully fetched all the products details",
+		"current_page": page,
 		"product_details": response,
 	})
 }

@@ -14,8 +14,8 @@ spec:
     spec:
       containers:
       - name: app-name
-        image: kars-app:latest
-        imagePullPolicy: Never
+        image: shuhaib876/kars-app:latest
+        imagePullPolicy: Always
         ports:
         - containerPort: 3000
         env:
